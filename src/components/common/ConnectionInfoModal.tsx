@@ -22,9 +22,10 @@ interface ConnectionInfo {
 interface ConnectionInfoModalProps {
     open: boolean;
     onOpenChange: (open: boolean) => void;
+    bucketName?: string;
 }
 
-export default function ConnectionInfoModal({ open, onOpenChange }: ConnectionInfoModalProps) {
+export default function ConnectionInfoModal({ open, onOpenChange, bucketName }: ConnectionInfoModalProps) {
     const [info, setInfo] = useState<ConnectionInfo | null>(null);
     const [showSecret, setShowSecret] = useState(false);
     const [copiedField, setCopiedField] = useState<string | null>(null);
@@ -46,6 +47,8 @@ export default function ConnectionInfoModal({ open, onOpenChange }: ConnectionIn
 
     if (!info) return null;
 
+    if (!info) return null;
+
     const jsSnippet = `const S3 = require('aws-sdk/clients/s3');
 
 const s3 = new S3({
@@ -54,7 +57,13 @@ const s3 = new S3({
     secretAccessKey: '${info.secretKey}',
     s3ForcePathStyle: true,
     signatureVersion: 'v4'
-});`;
+});${bucketName ? `
+
+// List objects in '${bucketName}'
+s3.listObjectsV2({ Bucket: '${bucketName}' }, (err, data) => {
+    if (err) console.log(err);
+    else console.log(data);
+});` : ''}`;
 
     const pythonSnippet = `import boto3
 
@@ -62,9 +71,16 @@ s3 = boto3.client('s3',
     endpoint_url='${info.endpoint}',
     aws_access_key_id='${info.accessKey}',
     aws_secret_access_key='${info.secretKey}'
-)`;
+)${bucketName ? `
 
-    const cliSnippet = `mc alias set myminio ${info.endpoint} ${info.accessKey} ${info.secretKey}`;
+# List objects in '${bucketName}'
+response = s3.list_objects_v2(Bucket='${bucketName}')
+print(response.get('Contents', []))` : ''}`;
+
+    const cliSnippet = `mc alias set myminio ${info.endpoint} ${info.accessKey} ${info.secretKey}${bucketName ? `
+
+# List objects in '${bucketName}'
+mc ls myminio/${bucketName}` : ''}`;
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>

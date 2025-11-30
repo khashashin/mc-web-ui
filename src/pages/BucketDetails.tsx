@@ -10,9 +10,10 @@ import {
 } from '@/components/ui/table';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, File, Folder } from 'lucide-react';
+import { ArrowLeft, File, Folder, Info } from 'lucide-react';
 import UploadObjectModal from '@/components/buckets/UploadObjectModal';
 import ObjectActions from '@/components/buckets/ObjectActions';
+import ConnectionInfoModal from '@/components/common/ConnectionInfoModal';
 
 interface BucketObject {
     name: string;
@@ -26,6 +27,8 @@ export default function BucketDetails() {
     const [objects, setObjects] = useState<BucketObject[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
+
+    const [connectionInfoOpen, setConnectionInfoOpen] = useState(false);
 
     const fetchObjects = useCallback(async () => {
         if (!bucketName) return;
@@ -80,8 +83,20 @@ export default function BucketDetails() {
                     </Button>
                     <h1 className="text-3xl font-bold text-foreground">{bucketName}</h1>
                 </div>
-                <UploadObjectModal bucketName={bucketName!} onUpload={fetchObjects} />
+                <div className="flex gap-2">
+                    <Button variant="outline" onClick={() => setConnectionInfoOpen(true)}>
+                        <Info className="mr-2 h-4 w-4" />
+                        Connection Info
+                    </Button>
+                    <UploadObjectModal bucketName={bucketName!} onUpload={fetchObjects} />
+                </div>
             </div>
+
+            <ConnectionInfoModal
+                open={connectionInfoOpen}
+                onOpenChange={setConnectionInfoOpen}
+                bucketName={bucketName}
+            />
 
             <Card>
                 <CardHeader>
