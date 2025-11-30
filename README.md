@@ -2,7 +2,9 @@
 
 A modern, lightweight, and beautiful web interface for MinIO Object Storage, built with React, Vite, shadcn/ui, and Node.js.
 
-![MC Web UI](docs/img/Screenshot%201.png)
+
+| ![MC Web UI](docs/img/Screenshot-1.png) | ![MC Web UI](docs/img/Screenshot-2.png) |
+|-----------------------------------------|-----------------------------------------|
 
 ## Features
 
@@ -35,14 +37,19 @@ The app will be available at `http://localhost:3000`.
 
 ### Coolify
 
-You can deploy this directly to [Coolify](https://coolify.io/) using the provided `coolify.yaml` or by adding a Docker Compose service:
+You can deploy this directly to [Coolify](https://coolify.io/) using the provided `coolify.yaml` or by adding a Docker Compose service.
+
+**Configuration**:
+You **must** set the `MINIO_ENDPOINT` environment variable to the URL of your MinIO service:
+- **Internal (Same Stack)**: Use the service name (e.g., `http://minio:9000`).
+- **External**: Use the full domain (e.g., `https://minio.yourdomain.com`).
 
 ```yaml
 services:
   mc-web-ui:
     image: ghcr.io/khashashin/mc-web-ui:latest
     environment:
-      - MINIO_ENDPOINT=http://minio:9000 # Internal URL to your MinIO service
+      - MINIO_ENDPOINT=http://minio:9000 # REPLACE with your MinIO URL
       - NODE_ENV=production
     ports:
       - "3000:3000"
