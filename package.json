@@ -1,7 +1,14 @@
 {
-  "name": "minio-web-client",
+  "name": "mc-web-ui",
   "private": true,
-  "version": "0.0.0",
+  "version": "0.1.0",
+  "description": "A modern, lightweight web client for MinIO Object Storage",
+  "author": "Khashashin",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/khashashin/mc-web-ui.git"
+  },
   "type": "module",
   "scripts": {
     "dev": "tsx watch server.js",

@@ -24,7 +24,7 @@ export default function Sidebar() {
                 <div className="w-8 h-8 bg-sidebar-primary rounded-md flex items-center justify-center">
                     <Box className="w-5 h-5 text-sidebar-primary-foreground" />
                 </div>
-                <span className="text-lg font-bold text-sidebar-foreground tracking-tight">MinIO Client</span>
+                <span className="text-lg font-bold text-sidebar-foreground tracking-tight">MC Web UI</span>
             </div>
 
             <ScrollArea className="flex-1 py-4">

@@ -1,6 +1,6 @@
 services:
-  minio-web-client:
-    image: ghcr.io/khashashin/minio-web-client:latest
+  mc-web-ui:
+    image: ghcr.io/khashashin/mc-web-ui:latest
     ports:
       - "3000:3000"
     environment:
