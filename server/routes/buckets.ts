@@ -1,6 +1,10 @@
 import { Router } from 'express';
 import { McClient } from '../services/mc.js';
 import { authMiddleware } from '../middleware/auth.js';
+import multer from 'multer';
+import { Readable } from 'stream';
+
+const upload = multer({ storage: multer.memoryStorage() });
 
 const router = Router();
 
@@ -65,6 +69,28 @@ router.get('/:name/objects', async (req, res) => {
 
     if (result.success) {
         res.json({ objects: result.data });
+    } else {
+        res.status(500).json({ error: result.error });
+    }
+});
+
+// POST /api/buckets/:name/objects
+router.post('/:name/objects', upload.single('file'), async (req, res) => {
+    const { name } = req.params;
+    const file = req.file;
+
+    if (!file) {
+        return res.status(400).json({ error: 'No file uploaded' });
+    }
+
+    // @ts-ignore
+    const mc = new McClient(req.session);
+    const stream = Readable.from(file.buffer);
+
+    const result = await mc.putObject(name, file.originalname, stream, file.size);
+
+    if (result.success) {
+        res.json({ message: 'Object uploaded', name: file.originalname });
     } else {
         res.status(500).json({ error: result.error });
     }

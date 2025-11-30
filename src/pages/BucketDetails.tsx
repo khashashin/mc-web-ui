@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useParams, Link } from 'react-router';
 import {
     Table,
@@ -11,6 +11,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, File, Folder } from 'lucide-react';
+import UploadObjectModal from '@/components/buckets/UploadObjectModal';
 
 interface BucketObject {
     name: string;
@@ -25,29 +26,29 @@ export default function BucketDetails() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
 
-    useEffect(() => {
-        const fetchObjects = async () => {
-            try {
-                const res = await fetch(`/api/buckets/${bucketName}/objects`);
-                const data = await res.json();
-                if (res.ok) {
-                    setObjects(data.objects || []);
-                } else {
-                    setError(data.error || 'Failed to fetch objects');
-                }
-            } catch (err) {
-                setError('Failed to connect to server');
-            } finally {
-                setLoading(false);
+    const fetchObjects = useCallback(async () => {
+        if (!bucketName) return;
+        setLoading(true);
+        try {
+            const res = await fetch(`/api/buckets/${bucketName}/objects`);
+            const data = await res.json();
+            if (res.ok) {
+                setObjects(data.objects || []);
+            } else {
+                setError(data.error || 'Failed to fetch objects');
             }
-        };
-
-        if (bucketName) {
-            fetchObjects();
+        } catch (err) {
+            setError('Failed to connect to server');
+        } finally {
+            setLoading(false);
         }
     }, [bucketName]);
 
-    if (loading) {
+    useEffect(() => {
+        fetchObjects();
+    }, [fetchObjects]);
+
+    if (loading && objects.length === 0) {
         return <div className="p-8 text-center text-muted-foreground">Loading objects...</div>;
     }
 
@@ -69,13 +70,16 @@ export default function BucketDetails() {
 
     return (
         <div className="p-8 space-y-6">
-            <div className="flex items-center gap-4">
-                <Button asChild variant="ghost" size="icon">
-                    <Link to="/">
-                        <ArrowLeft className="h-5 w-5" />
-                    </Link>
-                </Button>
-                <h1 className="text-3xl font-bold text-foreground">{bucketName}</h1>
+            <div className="flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                    <Button asChild variant="ghost" size="icon">
+                        <Link to="/">
+                            <ArrowLeft className="h-5 w-5" />
+                        </Link>
+                    </Button>
+                    <h1 className="text-3xl font-bold text-foreground">{bucketName}</h1>
+                </div>
+                <UploadObjectModal bucketName={bucketName!} onUpload={fetchObjects} />
             </div>
 
             <Card>

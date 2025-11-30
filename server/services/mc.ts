@@ -1,4 +1,5 @@
 import { spawn } from 'child_process';
+import { Readable } from 'stream';
 import * as Minio from 'minio';
 import { Session } from './session.js';
 
@@ -12,7 +13,9 @@ interface IMcClient {
     listBuckets(): Promise<McResult>;
     createBucket(name: string): Promise<McResult>;
     deleteBucket(name: string, force?: boolean): Promise<McResult>;
+    deleteBucket(name: string, force?: boolean): Promise<McResult>;
     listObjects(bucket: string, prefix?: string): Promise<McResult>;
+    putObject(bucket: string, objectName: string, stream: Readable, size: number): Promise<McResult>;
 }
 
 class McClientSdk implements IMcClient {
@@ -96,6 +99,15 @@ class McClientSdk implements IMcClient {
             return { success: false, error: err.message };
         }
     }
+
+    async putObject(bucket: string, objectName: string, stream: Readable, size: number): Promise<McResult> {
+        try {
+            await this.client.putObject(bucket, objectName, stream, size);
+            return { success: true };
+        } catch (err: any) {
+            return { success: false, error: err.message };
+        }
+    }
 }
 
 class McClientCli implements IMcClient {
@@ -125,6 +137,26 @@ class McClientCli implements IMcClient {
             ? `${this.alias}/${bucket}/${prefix}`
             : `${this.alias}/${bucket}`;
         return McClientCli.execute(['ls', '--json', path]);
+    }
+
+    async putObject(bucket: string, objectName: string, stream: Readable, size: number): Promise<McResult> {
+        return new Promise((resolve) => {
+            const proc = spawn('mc', ['pipe', `${this.alias}/${bucket}/${objectName}`]);
+
+            stream.pipe(proc.stdin);
+
+            proc.on('close', (code) => {
+                if (code === 0) {
+                    resolve({ success: true });
+                } else {
+                    resolve({ success: false, error: 'Failed to upload object' });
+                }
+            });
+
+            proc.on('error', (err) => {
+                resolve({ success: false, error: err.message });
+            });
+        });
     }
 
     private static execute(args: string[]): Promise<McResult> {
@@ -225,4 +257,5 @@ export class McClient {
     async createBucket(name: string) { return this.client.createBucket(name); }
     async deleteBucket(name: string, force = false) { return this.client.deleteBucket(name, force); }
     async listObjects(bucket: string, prefix = '') { return this.client.listObjects(bucket, prefix); }
+    async putObject(bucket: string, objectName: string, stream: Readable, size: number) { return this.client.putObject(bucket, objectName, stream, size); }
 }
