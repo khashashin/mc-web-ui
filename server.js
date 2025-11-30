@@ -39,6 +39,9 @@ app.use(express.json())
 import cookieParser from 'cookie-parser'
 app.use(cookieParser())
 
+import { sessionMiddleware } from './server/middleware/session.ts'
+app.use(sessionMiddleware)
+
 // API Routes
 import authRoutes from './server/routes/auth.ts'
 import bucketRoutes from './server/routes/buckets.ts'
