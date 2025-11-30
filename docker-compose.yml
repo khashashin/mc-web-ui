@@ -1,6 +1,6 @@
 services:
   minio-web-client:
-    build: .
+    image: ghcr.io/khashashin/minio-web-client:latest
     ports:
       - "3000:3000"
     environment:
@@ -8,9 +8,6 @@ services:
       - NODE_ENV=development
       - PORT=3000
       - HOST=0.0.0.0
-    volumes:
-      - ./src:/app/src
-      - ./server:/app/server
     depends_on:
       - minio
 
