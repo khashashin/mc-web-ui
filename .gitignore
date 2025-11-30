@@ -125,3 +125,7 @@ dist
 # OS
 .DS_Store
 Thumbs.db
+
+implementation_plan.md
+task.md
+walkthrough.md
