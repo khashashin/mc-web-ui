@@ -2,7 +2,7 @@
 
 A modern, lightweight, and beautiful web interface for MinIO Object Storage, built with React, Vite, shadcn/ui, and Node.js.
 
-![MC Web UI](https://github.com/khashashin/mc-web-ui/raw/main/public/screenshot.png)
+![MC Web UI](docs/img/Screenshot%201.png)
 
 ## Features
 
