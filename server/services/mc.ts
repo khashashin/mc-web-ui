@@ -16,6 +16,8 @@ interface IMcClient {
     deleteBucket(name: string, force?: boolean): Promise<McResult>;
     listObjects(bucket: string, prefix?: string): Promise<McResult>;
     putObject(bucket: string, objectName: string, stream: Readable, size: number): Promise<McResult>;
+    deleteObject(bucket: string, objectName: string): Promise<McResult>;
+    renameObject(bucket: string, oldName: string, newName: string): Promise<McResult>;
 }
 
 class McClientSdk implements IMcClient {
@@ -108,6 +110,28 @@ class McClientSdk implements IMcClient {
             return { success: false, error: err.message };
         }
     }
+
+    async deleteObject(bucket: string, objectName: string): Promise<McResult> {
+        try {
+            await this.client.removeObject(bucket, objectName);
+            return { success: true };
+        } catch (err: any) {
+            return { success: false, error: err.message };
+        }
+    }
+
+    async renameObject(bucket: string, oldName: string, newName: string): Promise<McResult> {
+        try {
+            // MinIO SDK copyObject signature: (bucket, object, source, conditions)
+            // Source must be /bucket/object
+            const conds = new Minio.CopyConditions();
+            await this.client.copyObject(bucket, newName, `/${bucket}/${oldName}`, conds);
+            await this.client.removeObject(bucket, oldName);
+            return { success: true };
+        } catch (err: any) {
+            return { success: false, error: err.message };
+        }
+    }
 }
 
 class McClientCli implements IMcClient {
@@ -157,6 +181,14 @@ class McClientCli implements IMcClient {
                 resolve({ success: false, error: err.message });
             });
         });
+    }
+
+    async deleteObject(bucket: string, objectName: string): Promise<McResult> {
+        return McClientCli.execute(['rm', `${this.alias}/${bucket}/${objectName}`]);
+    }
+
+    async renameObject(bucket: string, oldName: string, newName: string): Promise<McResult> {
+        return McClientCli.execute(['mv', `${this.alias}/${bucket}/${oldName}`, `${this.alias}/${bucket}/${newName}`]);
     }
 
     private static execute(args: string[]): Promise<McResult> {
@@ -258,4 +290,6 @@ export class McClient {
     async deleteBucket(name: string, force = false) { return this.client.deleteBucket(name, force); }
     async listObjects(bucket: string, prefix = '') { return this.client.listObjects(bucket, prefix); }
     async putObject(bucket: string, objectName: string, stream: Readable, size: number) { return this.client.putObject(bucket, objectName, stream, size); }
+    async deleteObject(bucket: string, objectName: string) { return this.client.deleteObject(bucket, objectName); }
+    async renameObject(bucket: string, oldName: string, newName: string) { return this.client.renameObject(bucket, oldName, newName); }
 }

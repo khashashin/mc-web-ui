@@ -12,6 +12,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, File, Folder } from 'lucide-react';
 import UploadObjectModal from '@/components/buckets/UploadObjectModal';
+import ObjectActions from '@/components/buckets/ObjectActions';
 
 interface BucketObject {
     name: string;
@@ -99,6 +100,7 @@ export default function BucketDetails() {
                                     <TableHead>Name</TableHead>
                                     <TableHead>Size</TableHead>
                                     <TableHead>Last Modified</TableHead>
+                                    <TableHead className="w-[50px]"></TableHead>
                                 </TableRow>
                             </TableHeader>
                             <TableBody>
@@ -114,6 +116,15 @@ export default function BucketDetails() {
                                         <TableCell className="font-medium">{obj.name}</TableCell>
                                         <TableCell>{obj.size} B</TableCell>
                                         <TableCell>{new Date(obj.lastModified).toLocaleString()}</TableCell>
+                                        <TableCell>
+                                            {!obj.name.endsWith('/') && (
+                                                <ObjectActions
+                                                    bucketName={bucketName!}
+                                                    objectName={obj.name}
+                                                    onActionComplete={fetchObjects}
+                                                />
+                                            )}
+                                        </TableCell>
                                     </TableRow>
                                 ))}
                             </TableBody>

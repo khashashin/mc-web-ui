@@ -96,4 +96,44 @@ router.post('/:name/objects', upload.single('file'), async (req, res) => {
     }
 });
 
+// DELETE /api/buckets/:name/objects?objectName=...
+router.delete('/:name/objects', async (req, res) => {
+    const { name } = req.params;
+    const { objectName } = req.query;
+
+    if (!objectName || typeof objectName !== 'string') {
+        return res.status(400).json({ error: 'Object name is required' });
+    }
+
+    // @ts-ignore
+    const mc = new McClient(req.session);
+    const result = await mc.deleteObject(name, objectName);
+
+    if (result.success) {
+        res.json({ message: 'Object deleted', name: objectName });
+    } else {
+        res.status(500).json({ error: result.error });
+    }
+});
+
+// POST /api/buckets/:name/objects/rename
+router.post('/:name/objects/rename', async (req, res) => {
+    const { name } = req.params;
+    const { oldName, newName } = req.body;
+
+    if (!oldName || !newName) {
+        return res.status(400).json({ error: 'Old name and new name are required' });
+    }
+
+    // @ts-ignore
+    const mc = new McClient(req.session);
+    const result = await mc.renameObject(name, oldName, newName);
+
+    if (result.success) {
+        res.json({ message: 'Object renamed', oldName, newName });
+    } else {
+        res.status(500).json({ error: result.error });
+    }
+});
+
 export default router;
