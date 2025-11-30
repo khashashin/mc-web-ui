@@ -142,7 +142,15 @@ class McClientCli implements IMcClient {
     }
 
     async listBuckets(): Promise<McResult> {
-        return McClientCli.execute(['ls', '--json', this.alias]);
+        const result = await McClientCli.execute(['ls', '--json', this.alias]);
+        if (result.success && Array.isArray(result.data)) {
+            result.data = result.data.map((item: any) => ({
+                name: item.key ? item.key.replace(/\/$/, '') : item.name,
+                creationDate: item.lastModified,
+                size: item.size || 0
+            }));
+        }
+        return result;
     }
 
     async createBucket(name: string): Promise<McResult> {
